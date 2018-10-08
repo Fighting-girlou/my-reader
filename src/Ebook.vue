@@ -117,16 +117,57 @@ export default {
                 //相当于给fontSize赋值，所以要加上px才会生效
             }
         },
+      // 电子书的解析和渲染
+        showEpub () {
+          // 生成Book对象
+          this.book = new Epub(DOMLOAD_URL)
+          // 生成Rendition对象，通过Book.renderTo方法
+          this.rendition = this.book.renderTo('read', {
+            width: window.innerWidth,
+            height: window.innerHeight
+          })
+          // 通过Rendtion.display渲染电子书
+          this.rendition.display()
+          // 获取到Theme对象，用来对字体大小进行设置
+          this.themes = this.rendition.themes
+          // 调用设置默认字体的方法
+          this.setFontSize(this.defaultFontSize)
+          // 调用主题设置的方法
+          this.registerThemes()
+          // 调用主题样式的方法
+          this.setTheme(this.defaultTheme)
+          // 获取Locations对象，实现进度条和目录功能
+          // 通过epubjs的钩子函数来实现
+          this.book.ready.then(() => {
+            this.navigation = this.book.navigation
+            return this.book.locations.generate()
+          }).then(result => {
+            this.locations = this.book.locations
+            this.bookAvailable = true
+          })
+        },
+        // 实现翻上一页
+        prevPage () {
+          if (this.rendition) {
+            this.rendition.prev()
+          }
+        },
+        // 实现翻下一页
+        nextPage () {
+          if (this.rendition) {
+            this.rendition.next()
+          }
+        },
         showWarp (){
             this.iftitleAndmenuShow=!this.iftitleAndmenuShow
             if(!this.iftitleAndmenuShow){
                 this.$refs.menuBar.hideSetting()
                 //ref属性是绑定节点
             }
-        },
+        }
+    },
     mounted (){
-        this.showEpub()
-    }
+      this.showEpub()
     }
 }
 </script>
